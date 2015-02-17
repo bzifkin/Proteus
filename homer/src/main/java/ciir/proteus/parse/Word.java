@@ -1,4 +1,4 @@
-package ciir.proteus.parse;
+//package ciir.proteus.parse;
 import java.lang.Comparable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,21 +13,32 @@ import java.util.List;
  *
  * @author bzifkin
  */
-public class Word implements Comparable<Word> {
+public class Word {
 
+    
+    //this field is used for both headers and page numbers
+    String text;
+    
+    //these fields are mostly used in the process of finding page numbers
+    int index = -1;
     boolean isArabic = false;
     boolean isRoman = false;
-    boolean usable = true;
-    int index = -1;
-    String text;
     boolean isBlank = false;
+    
+    //these fields are mostly used in the process of finding headers
     int xOne; //coordinates of the words
     int yOne;
     int xTwo;
     int yTwo;
     int line;
-    List<Word> potentialMatches = new ArrayList<Word>();
-    int count = 0;
+    boolean top;
+    boolean bottom;
+    boolean side;
+    boolean inLine = false;
+    boolean extrapolated = false;
+    List<Word> potentialMatches = new ArrayList<Word>(); //words that are an acceptable edit distance away from each other
+    int count = 0; //number of times this particular variation of a word was found
+    double strength =0; //used to indicate the certainty of a certain word *****************************************************************do i use or not?***********************************
 
     public Word() {
     }
@@ -40,37 +51,36 @@ public class Word implements Comparable<Word> {
         this.text = text;
         this.index = ind;
     }
-    public static final Comparator<Word> countComparator = new Comparator<Word>() {
+    public static class WordStrengthComparator implements Comparator<Word> {
+    public int compare(Word word1, Word word2) {
+        return Double.compare(word2.strength, word1.strength);
+    }
+}
+public static class WordCountComparator implements Comparator<Word> {
+    public int compare(Word word1, Word word2) {
+        return word2.count - word1.count;
+    }
+}
 
-        @Override
-        public int compare(Word w1, Word w2) {
-            return w2.count - w1.count;
-        }
-
-    };
+public static class WordXOneComparator implements Comparator<Word> {
+    public int compare(Word word1, Word word2) {
+        return word1.xOne - word2.xOne;
+    }
+}
             
            
 
              
-@Override
-    public int compareTo(Word w) {
-//formulated this way so that when calling sort the list is ordered from largest to smallest
-        if (this.count < w.count) {
-            return 1;
-        } else if (this.count > w.count) {
-            return -1;
-        } else {
-            return 0;
-        }
 
-    }
+ 
 
     public int[] getCoords() {
-        int[] coords = new int[4];
+        int[] coords = new int[5];
         coords[0] = this.xOne;
         coords[1] = this.yOne;
         coords[2] = this.xTwo;
         coords[3] = this.yTwo;
+        coords[4] = this.line;
         return coords;
     }
 
@@ -107,5 +117,22 @@ public class Word implements Comparable<Word> {
         stuff = text + "\t" + index + "\n";
         return stuff;
     }
-
+    
+     public String toSimpleString() {
+        String stuff = "";
+        stuff = text + " ";
+        return stuff;
+    }
+    public String toStringSC() {
+      
+        String stuff = "";
+         stuff = "WORD: " + text + "(" + xOne + " , " + yOne + " , " + xTwo + " , " + yTwo + " , " + line +  ")\t STRENGTH: " + strength + "\t COUNT: "+ count +"\n";
+        return stuff;
+    }
+public String toLineString() {
+        
+        String stuff = "";
+         stuff = stuff + text +  "(" + xOne + " , " + yOne + " , " + xTwo + " , " + yTwo + " , " + line +  ")\t";
+        return stuff;
+    }
 }

@@ -1,4 +1,4 @@
-package ciir.proteus.parse;
+//package ciir.proteus.parse;
 
 
 import java.util.ArrayList;
@@ -10,10 +10,17 @@ import java.util.List;
  */
 public class Pages {
 
-    
+    boolean blank;
     int indexNum;
+    int qInch = 0;
     List<Word> wordsOnPage = new ArrayList<Word>();
-    //List<SubScheme> schemesOnPage = new ArrayList<SubScheme>();
+    List<Header> top= new ArrayList<Header>();
+    List<Header> bot = new ArrayList<Header>();
+    List<Header> side = new ArrayList<Header>();
+    List<Word> topWords= new ArrayList<Word>();
+    List<Word> botWords = new ArrayList<Word>();
+    List<Word> sideWords = new ArrayList<Word>();
+   
 
     public Pages() {
 

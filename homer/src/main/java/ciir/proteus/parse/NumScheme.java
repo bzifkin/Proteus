@@ -1,4 +1,4 @@
-package ciir.proteus.parse;
+//package ciir.proteus.parse;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author bzifkin
  */
-public class NumScheme implements Comparable<NumScheme> {
+public class NumScheme  {
 
     String title;
     boolean inScheme = false;
@@ -19,17 +19,28 @@ public class NumScheme implements Comparable<NumScheme> {
     boolean inParkLot = false;
     List<Word> sequence = new ArrayList<Word>();
 
-    public static final Comparator<NumScheme> indexComparator = new Comparator<NumScheme>() {
+    
 
-        @Override
+    public NumScheme() {
+    }
+
+      
+    
+      public static class indexComparator implements Comparator<NumScheme> {
         public int compare(NumScheme num, NumScheme sch) {
             return num.getFirst().index - sch.getFirst().index;
         }
 
-    };
-
-    public NumScheme() {
     }
+    
+     public static class lengthComparator implements Comparator<NumScheme> {
+        public int compare(NumScheme num, NumScheme sch) {
+            return num.sequence.size() - sch.sequence.size();
+        }
+
+    }
+     
+   
 
     public Word getLast() {
         return sequence.get(sequence.size() - 1);
@@ -78,7 +89,7 @@ public class NumScheme implements Comparable<NumScheme> {
     
       public String toTabbedString() {
         String result = "";
- 
+        //result = result + "TRUE SIZE: " + getTrueSize() + "\n";
         for (Word w : this.sequence) {
             result = result + w.toTabbedString();
         }
@@ -89,19 +100,6 @@ public class NumScheme implements Comparable<NumScheme> {
         return this.sequence.size() - getAllBlanks();
     }
 
-    @Override
-    //formulated this way so that when calling sort the list is ordered from largest to smallest
-    public int compareTo(NumScheme ns) {
-
-        if (this.getTrueSize() < ns.getTrueSize()) {
-            return 1;
-        } else if (this.getTrueSize() > ns.getTrueSize()) {
-            return -1;
-        } else {
-            return 0;
-        }
-
-    }
 
 //use this function to count backwards to last non-blank number...useful for extrapolating missing #s
     public int getLastBlanks() {

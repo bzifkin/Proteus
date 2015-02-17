@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 //package ciir.proteus.parse;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -17,28 +16,39 @@ import javax.xml.stream.XMLStreamException;
  * @author bzifkin
  */
 public class Scorer {
-
+  static int total = 0;
+  static int totalCorr = 0;
+  
     public Scorer() {
     }
 
     public static String compareAndScore(List<String[]> truth, List<String[]> maybe) {
         ArrayList<String[]> tru = expandList((ArrayList<String[]>) truth);
+      
         int missBeg = 0;
         int missEnd = 0;
         int correct = 0;
         int blanksCorrect = 0;
         int blanksMissed = 0;
         int wrong = 0;
+        int firstPageOfGuess = 0;
+        int lastPageOfGuess = 0;
         String SCORE = "";
-        int firstPageOfGuess = Integer.valueOf(maybe.get(0)[1]);
-        int lastPageOfGuess = Integer.valueOf(maybe.get(maybe.size() - 1)[1]);
+        if (maybe.size() > 0) {
+            firstPageOfGuess = Integer.valueOf(maybe.get(0)[1]);
+            lastPageOfGuess = Integer.valueOf(maybe.get(maybe.size() - 1)[1]);
+        } else {
+            return "No page numbers found at all";
+        }
         int lastPage = Integer.valueOf(tru.get(tru.size() - 1)[1]);
         int firstPage = Integer.valueOf(tru.get(0)[1]);
         int correctSize = tru.size();
         for (String[] stray : tru) {
+            total++;
             if (inTheList(maybe, stray)) {
 
                 correct++;
+                totalCorr ++;
                 if (stray[0].equalsIgnoreCase("blank")) {
                     blanksCorrect++;
                 }
@@ -51,14 +61,15 @@ public class Scorer {
             } else if (Integer.valueOf(stray[1]) > lastPageOfGuess) {
                 missEnd++;
                 wrong++;
-            } else
+            } else {
                 wrong++;
+            }
 
         }
 
         int percentCorrect = (int) (correct * 100f) / correctSize;
 
-        return "There were " + correct + " / " + correctSize + " for " + percentCorrect + "% correct with \n" + wrong + " wrong guesses with " + missBeg + " pages missing in the begining and " + missEnd + " pages missed from the end \n" + "There were "+  blanksCorrect + " correct blanks and " + blanksMissed + " missed blanks\n";
+        return "There were " + correct + " / " + correctSize + " for " + percentCorrect + "% correct with \n" + wrong + " wrong guesses with " + missBeg + " pages missing in the begining and " + missEnd + " pages missed from the end \n" + "There were " + blanksCorrect + " correct blanks and " + blanksMissed + " missed blanks\n";
     }
 
     public static boolean inTheList(List<String[]> guess, String[] stray) {
@@ -211,6 +222,8 @@ public class Scorer {
             int index = checkTitles(res.get(i).title.substring(0, 6), obs);
             if (index != -1) {
                 System.out.println("For book " + res.get(i).title + " " + compareAndScore(obs.get(index).theList, res.get(i).theList));
+                
+                System.out.println("There were " + total + " numbered pages and we identified " + totalCorr + " correctly");
                 /* String resout = "";
                  List<String[]> lis = res.get(i).theList;
                  for (int k = 0; k <= lis.size() - 1; k++) {

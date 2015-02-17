@@ -33,7 +33,8 @@ public class Preprocessing {
 
     public Preprocessing() {
     }
-
+    int pHeight;
+    int pWidth;
     int marginUp = 0; //these are the margins which determines if a token is eligible or not
     int marginDown = 0;
     int marginLeft = 0;
@@ -43,7 +44,7 @@ public class Preprocessing {
     int yOne = 0;
     int xTwo = 0;
     int yTwo = 0;
-    int line =0;
+    int line = 0;
     int properPNum = 1;
     boolean mapCheck = false;
     boolean paramCheck = false;
@@ -134,13 +135,13 @@ public class Preprocessing {
 
     //calculate margins to be outer 10%
     public void calculateMargins(int ph, int pw) {
-        marginUp = (int) (ph * .1);
+        marginUp = (int) (ph * .15);
 
         marginDown = ph - ((int) (ph * .1));
 
-        marginLeft = (int) (pw * .1);
+        marginLeft = (int) (pw * .05);
 
-        marginRight = pw - ((int) (pw * .1));
+        marginRight = pw - ((int) (pw * .05));
 
     }
 //this grabs the amount of pixels in an inch, allowing us to add a 
@@ -157,7 +158,10 @@ public class Preprocessing {
         yOne = Integer.valueOf(st.nextToken());
         xTwo = Integer.valueOf(st.nextToken());
         yTwo = Integer.valueOf(st.nextToken());
-        line = Integer.valueOf(st.nextToken());
+        if (st.hasMoreTokens()) {
+
+            line = Integer.valueOf(st.nextToken());
+        }
 
     }
 
@@ -176,11 +180,15 @@ public class Preprocessing {
     }
 //see if in margins
 
-    public boolean inMargin(int xone, int yone, int xtwo, int ytwo) {
-        if (xone <= (marginLeft + quarterInch) || yone >= (marginDown - quarterInch) || xtwo >= (marginRight - quarterInch) || ytwo <= (marginUp + quarterInch)) {
-            return true;
+    public int checkMargins(int xone, int yone, int xtwo, int ytwo) {
+        if (ytwo <= (marginUp + quarterInch)) {
+            return 2;
+        } else if (yone >= (marginDown - quarterInch)) {
+            return 1;
+        } else if (xone <= (marginLeft + quarterInch) || xtwo >= (marginRight - quarterInch)) {
+            return 0;
         } else {
-            return false;
+            return -1;
         }
 
     }
@@ -362,9 +370,11 @@ public class Preprocessing {
 
     }
 
-    public List<Pages> trim(XMLEvent event) throws FileNotFoundException, XMLStreamException {
+    public List<Pages> trim(XMLEvent event, boolean write) throws FileNotFoundException, XMLStreamException {
+        System.out.println("Trimming");
         XMLEventWriter writer = this.writer;
-
+        int topCount = 0;
+        int botCount = 0;
         while (reader.hasNext()) {
             increment();
             event = reader.nextEvent();
@@ -372,71 +382,71 @@ public class Preprocessing {
             if (event.isStartElement()) { //first it looks for start elements
                 StartElement se = event.asStartElement();
                 if ("BODY".equals(se.getName().getLocalPart())) {
-                    writer.add(se);
+                    pHeight = pWidth = 0;
+                    //pageList.removeAll(pageList);
+                    if (write == true) {
+                        writer.add(se);
+                    }
 
                 } else if ("PARAM".equals(se.getName().getLocalPart())) {
-                    if (checkIndex(se)) {
-                        writer.add(se);
-                    } else {
-                        writer.add(makeNewElement(se));
+                    if (write == true) {
+                        if (checkIndex(se)) {
+                            writer.add(se);
+                        } else {
+                            writer.add(makeNewElement(se));
+                        }
                     }
                     if (quarterInch >= 0) {
                         setQI(se);
                     }
                 } else if ("MAP".equals(se.getName().getLocalPart())) {
-                    if (checkIndex(se)) {
-                        writer.add(se);
-                    } else {
-                        writer.add(makeNewElement(se));
+                    if (write == true) {
+                        if (checkIndex(se)) {
+                            writer.add(se);
+                        } else {
+                            writer.add(makeNewElement(se));
+                        }
                     }
+                    topCount = botCount = 0;
                     Pages page = new Pages();
+                    page.qInch = quarterInch;
                     page.indexNum = properPNum;
                     pageList.add(page);
 
                 } else if ("OBJECT".equals(se.getName().getLocalPart())) {
-                    getPageHeightAndWidth(se);
-                    if (checkIndex(se)) {
-                        writer.add(se);
-                    } else {
-                        writer.add(makeNewElement(se));
+                    if (pHeight == 0 || pWidth == 0) {
+                        getPageHeightAndWidth(se);
+                    }
+                    if (write == true) {
+                        if (checkIndex(se)) {
+                            writer.add(se);
+                        } else {
+                            writer.add(makeNewElement(se));
+                        }
                     }
 
                 } else if ("LINE".equals(se.getName().getLocalPart())) {
-                    writer.add(se);
+                    if (write == true) {
+                        writer.add(se);
+                    }
 
                 } else if ("WORD".equals(se.getName().getLocalPart())) {
+
                     getWordCoords(se);
-
-                    if (inMargin(xOne, yOne, xTwo, yTwo)) { //check to see if in margins, if it is the end tag is written immediately, otherwise nothing is written
-                        Word word = new Word();
-                        word.xOne = xOne;
-                        word.yOne = yOne;
-                        word.xTwo = xTwo;
-                        word.yTwo = yTwo;
-                        word.line = line;
-
-                        word.text = reader.getElementText();
-
-                        EndElement wordEnd = eventFactory.createEndElement("", "", "WORD");
-                        writer.add(se);
-                        Characters characters = eventFactory.createCharacters(word.text);
-                        writer.add(characters);
-                        writer.add(wordEnd);
-                        if (pageList.size() == 0) {
-
-                            Pages page = new Pages();
-                            page.indexNum = word.index = 0;
-                            page.wordsOnPage.add(word);
-                            pageList.add(page);
-
-                        } else if (pageList.size() > 0) {
-
-                            Pages lastPage = pageList.get(pageList.size() - 1);
-                            word.index = lastPage.indexNum;
-                            lastPage.wordsOnPage.add(word);
-
+                    int x = checkMargins(xOne, yOne, xTwo, yTwo);
+                    if (x != -1) {
+                        if (x == 1 && botCount <= 100) {
+                            botCount++;
+                            Word w = makeWordObj(se, write);
+                            w.bottom = true;
+                        } else if (x == 2 && topCount <= 15) {
+                            topCount++;
+                            Word w = makeWordObj(se, write);
+                            w.top = true;
+                        } else {
+                            Word w = makeWordObj(se, write);
+                            w.side = true;
                         }
-
                     }
 
                 }
@@ -444,72 +454,67 @@ public class Preprocessing {
             } else if (event.isEndElement()) {
 
                 EndElement ee = event.asEndElement();
-                if ("BODY".equals(ee.getName().getLocalPart())) {
-                    writer.add(ee);
+                if (write == true) {
+                    if ("BODY".equals(ee.getName().getLocalPart())) {
+                        writer.add(ee);
 
-                } else if ("PARAM".equals(ee.getName().getLocalPart())) {
-                    writer.add(ee);
-                } else if ("MAP".equals(ee.getName().getLocalPart())) {
-                    writer.add(ee);
-                } else if ("OBJECT".equals(ee.getName().getLocalPart())) {
-                    writer.add(ee);
-                } else if ("LINE".equals(ee.getName().getLocalPart())) {
-                    writer.add(ee);
-                }
-
-            }
-
-        }
-        writer.flush();
-        writer.close();
-
-        return pageList;
-    }
-
-    public List<Pages> getPageList(XMLEvent event) throws XMLStreamException {
-        while (reader.hasNext()) {
-properPNum++;
-            event = reader.nextEvent();
-            if (event.isStartElement()) { //first it looks for start elements
-                StartElement se = event.asStartElement();
-                if ("MAP".equals(se.getName().getLocalPart())) {
-
-                    Pages page = new Pages();
-                    page.indexNum = properPNum;
-                    pageList.add(page);
-                }
-                if ("WORD".equals(se.getName().getLocalPart())) {
-                    getWordCoords(se);
-
-                    Word word = new Word();
-                    word.xOne = xOne;
-                    word.yOne = yOne;
-                    word.xTwo = xTwo;
-                    word.yTwo = yTwo;
-
-                    word.text = reader.getElementText();
-
-                    if (pageList.size() == 0) {
-
-                        Pages page = new Pages();
-                        page.indexNum = word.index = 0;
-                        page.wordsOnPage.add(word);
-                        pageList.add(page);
-
-                    } else if (pageList.size() > 0) {
-
-                        Pages lastPage = pageList.get(pageList.size() - 1);
-                        word.index = lastPage.indexNum;
-                        lastPage.wordsOnPage.add(word);
-
+                    } else if ("PARAM".equals(ee.getName().getLocalPart())) {
+                        writer.add(ee);
+                    } else if ("MAP".equals(ee.getName().getLocalPart())) {
+                        writer.add(ee);
+                    } else if ("OBJECT".equals(ee.getName().getLocalPart())) {
+                        writer.add(ee);
+                    } else if ("LINE".equals(ee.getName().getLocalPart())) {
+                        writer.add(ee);
                     }
 
                 }
             }
         }
-        
+        if(write==true){
+        writer.flush();
+        writer.close();
+        }
+        System.out.println("Done Trimming");
         return pageList;
     }
+
+    public Word makeWordObj(StartElement se, boolean write) throws XMLStreamException {
+        Word word = new Word();
+        word.text = reader.getElementText();
+        if (write == true) {
+            EndElement wordEnd = eventFactory.createEndElement("", "", "WORD");
+            writer.add(se);
+            Characters characters = eventFactory.createCharacters(word.text);
+            writer.add(characters);
+            writer.add(wordEnd);
+        }
+
+        word.xOne = xOne;
+        word.yOne = yOne;
+        word.xTwo = xTwo;
+        word.yTwo = yTwo;
+        word.line = line;
+
+        if (pageList.size() == 0) {
+
+            Pages page = new Pages();
+            page.indexNum = word.index = 0;
+            page.wordsOnPage.add(word);
+            pageList.add(page);
+
+        } else if (pageList.size() > 0) {
+
+            Pages lastPage = pageList.get(pageList.size() - 1);
+            word.index = lastPage.indexNum;
+            lastPage.wordsOnPage.add(word);
+
+        }
+        word.text = word.text.trim();
+        return word;
+
+    }
+
     /*
      public String findJumps(XMLEvent event) throws XMLStreamException {
      String jumps = "For book " + thef.getName() + " there are jumps between: ";
