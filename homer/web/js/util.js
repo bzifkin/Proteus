@@ -79,9 +79,21 @@ var getCookie = function(cname) {
 };
 
 var highlightText = function(queryTerms, text, beforeTag, afterTag) {
+
+    // there are situations where the "text" is actually an image such
+    // as a thumbnail so skip those.
+    if (text.toString().substring(0, 4) == "<img")
+        return text;
+
+    // remove any punctuation. For papers the authors are listed
+    // spearated by semicolons.
+    // Note we use toString(), because if a string like "2014" is passed
+    // in, JS will think it's a numeric datatype.
+    text = text.toString().replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g, "");
     var words = text.split(/\s/);
+
     return _(words).map(function(word) {
-        if (_.contains(queryTerms, word)) {
+        if (_.contains(queryTerms, word.toLowerCase())) {
             return beforeTag + word + afterTag;
         }
         return word;
@@ -90,8 +102,21 @@ var highlightText = function(queryTerms, text, beforeTag, afterTag) {
 
 function getSelectedLabels() {
 
-    //  console.log("LABELS: " + $('#multiselect-all').val());
-    return($('#multiselect-all').val());
+    var labels = [];
+    var tree = $("#tree").fancytree("getTree");
+    var selNodes = tree.getSelectedNodes();
+
+    selNodes.forEach(function(node) {
+
+        if (!node.hasChildren()) {// ONLY count leaf nodes
+
+            labels.push(node.key);
+        }
+    });
+
+    console.log("LABELS: " + labels);
+
+    return labels;
 
 }
 
@@ -105,19 +130,34 @@ function NO_TYPE_CONST() {
 // we want to allow them to select type/values to filter/search by/etc. So we'll store
 // them with a special "*" type, and as long as we don't display that, all the existing
 // code works nicely.
+// Also remove the rating
 function formatLabelForDatabase(origLabel) {
 
-    if (origLabel.indexOf(":") === -1) {
-        return NO_TYPE_CONST() + ":" + origLabel;
+    var labelWithoutRating = origLabel;
+
+    // if we have a rating, remove it
+    var idx = origLabel.lastIndexOf(" (");
+    if (idx > 0) {
+        labelWithoutRating = origLabel.substring(0, idx).trim();
+    }
+    if (labelWithoutRating.indexOf(":") === -1) {
+        return NO_TYPE_CONST() + ":" + labelWithoutRating;
     }
 
-    return origLabel;
+    return labelWithoutRating;
 }
-// when displaying tags, don't show the "*:"
+// when displaying tags, don't show the "*:" and display the
+// rating in a user friendly way
 function formatLabelForDispaly(origLabel) {
 
     if (origLabel.substring(0, 2) === NO_TYPE_CONST() + ":") {
-        return  origLabel.substr(2);
+        var label = origLabel.substr(2).split("@");
+        return  label[0] + " (" + label[1] + ")";
     }
-    return origLabel;
+    var label = origLabel.split("@");
+    return  label[0] + " (" + label[1] + ")";
+
+}
+function isLoggedIn() {
+    return Model.user != null;
 }

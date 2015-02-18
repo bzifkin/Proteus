@@ -13,11 +13,6 @@ var queryBox = $("#ui-search");
 var loginInfo = $("#ui-login-info");
 var moreButton = $("#ui-go-more");
 var searchButtons = $("#search-buttons");
-queryBox.keypress(function(e)
-{
-    if (e.keyCode == 13)
-        handleEnter();
-});
 
 // UI object/namespace
 var UI = {};
@@ -25,6 +20,8 @@ UI.generateButtons = function() {
 
 
     API.getKinds({}, function(data) {
+        if (data.title)
+            $("#proteus-title").html(data.title);
         UI.defaultKind = data.defaultKind;
         var availableKinds = _(data.kinds);
         var buttonDescriptions = _(UI.buttons);
@@ -36,6 +33,10 @@ UI.generateButtons = function() {
                 return;
             }
             var button = $('<input type="button" value="' + spec.button + '" />');
+            // see if we're the default button
+            if (kind === UI.defaultKind) {
+                button.addClass("default-search-button")
+            }
             button.click(function() {
                 UI.onClickSearchButton(spec);
             });
@@ -74,7 +75,7 @@ UI.setQuery = function(q) {
 /**
  * Render a single search result.
  * @see render.js
- * I'm adding comments now since i regret it 
+ * I'm adding comments now since i regret it
  * when I dont
  * deleted UI.makeResult since its useless.
  
@@ -83,31 +84,56 @@ UI.setQuery = function(q) {
 // added labels to our button bar when they add a new one
 
 function addLabelToButtons(newLabel) {
-    // get the two parts of the label
+    //alert("addLabelToButtons");
+    // get the two parts of the label, remove the rating
     var tmp = newLabel.split(":");
     var type = tmp[0];
     var value = tmp[1];
     // handle the special case of when they don't enter a TYPE
     // IF there is no type, add it to the "special" group
+
     if (_.isUndefined(value)) {
         value = type;
         type = NO_TYPE_CONST();
     }
 
+    var tree = $("#tree").fancytree("getTree");
+
     newLabel = type + ":" + value;
+    // make sure we don't already have this
+    var check = tree.getNodeByKey(newLabel);
+    if (check !== null)
+        return;
 
-    // see if that value is in the list
-    if ($('#multiselect-all optgroup[label="' + type + '"]').length == 0) {
-        $("#multiselect-all").append('<optgroup  label="' + type + '"><option value="' + newLabel + '">' + value + '</option></optgroup >');
-        $("#multiselect-all").multiselect('rebuild');
+    // new labels:
+
+    // search for the parent to attach it to
+    var node = tree.getNodeByKey(type);
+    if (node !== null) {
+
+        node.addChildren({
+            title: value, key: newLabel
+        });
+        tree.render();
     } else {
-        // see if the value exists
-        if ($('#multiselect-all optgroup[label="' + type + '"] option[value="' + newLabel + '"]').length == 0) {
-            $('#multiselect-all optgroup[label="' + type + '"]').append('<option value="' + newLabel + '">' + value + '</option>');
-            $("#multiselect-all").multiselect('rebuild');
-        }
-    }
+        // get the root node
+        var root = tree.getFirstChild();
 
+        // special logic for the first label
+        if (_.isUndefined(root)) {
+            getAllTagsByUser();
+            return;
+        }
+        //add the parent & child
+        var newNode = root.addChildren({
+            title: type, key: type, folder: true
+        });
+        newNode.addChildren({
+            title: value, key: newLabel
+        });
+        newNode.setExpanded(true);
+        tree.render();
+    }
 }
 
 /**
@@ -141,21 +167,19 @@ UI.appendResults = function(queryTerms, results, usingLabels) {
                 return true;
             },
             beforeTagAdded: function(event, ui) {
+                var that = this;
                 if (!ui.duringInitialization) {
                     // only ask "are you sure" if this is a NEW tag TYPE
                     tmp = ui.tagLabel.split(":");
                     var res = true;
                     if (tmp.length === 2 && $.inArray(tmp[0], GLOBAL.uniqTypes) === -1) {
                         res = confirm("Are you sure you want to create the label type \"" + tmp[0] + "\"?");
+                        if (res == false)
+                            return false;
                         // add the new type to our list
                         GLOBAL.uniqTypes.push(tmp[0]);
                     }
-                    if (res == true) {
-                        addTag(ui.tagLabel, result.name);
-                        // update the buttons
-                        addLabelToButtons(ui.tagLabel);
-                    }
-                    return res;
+
                 } else {
                     return true;
                 }
@@ -175,8 +199,7 @@ UI.appendResults = function(queryTerms, results, usingLabels) {
         }
 
     });
-}
-;
+};
 /**
  * A set of functions for reacting to events in other, more general code.
  */
@@ -195,11 +218,10 @@ UI.dispalyUserName = function() {
 
     if (user) {
         $("#ui-login-form").hide();
-        $("#ui-user-info").html("<span id='login-form-text'> Welcome " + user + "</span> <input id='ui-go-logout' type='button' value='LogOut' />")
-                .show();
+        $("#user-info").html("<span id='login-form-text'> Welcome " + user + "</span> <input id='ui-go-logout' type='button' value='LogOut' />").show();
 
         $("#ui-go-logout").click(function() {
-            $("#ui-user-info").hide();
+            $("#user-info").hide();
             logOut();
             $("#ui-login-form").show();
         });
@@ -230,22 +252,17 @@ UI.renderTags = function(result) {
 
     return '<div><ul id="tags_' + result.name + '">' + my_html + '</ul>' + ro_html + '</div>';
 };
-// used when we don't want to dispaly any of the "my tags" features
-UI.hideMyTagsFunctionality = function() {
-    $("#all-my-tags").html("");
-};
+
 UI.toggleMyTags = function() {
-    // if no one is loged in, we don't show anything
+    // if no one is logged in, we don't show anything
     if (getCookie("username") === "") {
-        UI.hideMyTagsFunctionality();
         return;
     }
     var ele = $("#my-tags-container");
     if (ele.is(":visible")) {
         $("#toggle-my-tags-img").attr("src", "/images/down_arrows.png");
         ele.hide();
-    }
-    else {
+    } else {
         $("#toggle-my-tags-img").attr("src", "/images/up_arrows.png");
         ele.show();
     }
@@ -254,44 +271,52 @@ UI.toggleMyTags = function() {
 // param is array of uniq types
 UI.createLabelMultiselect = function(myUniqTypes) {
 
+    // alert("createLabelMultiselect");
     var userName = getCookie("username");
     var userID = getCookie("userid");
     if (userName === "") {
-        $("#all-my-tags").html("");
         return;
     }
+    $("#empty-tree").html("");
+    var node0 = $("#tree").fancytree("getRootNode");
+    //   var all_key = ALL_NODE_KEY();
+    var rootNode = node0.addChildren({
+        title: "All", //     key: all_key,
+        folder: true
+    });
 
-    var html = '<select id="multiselect-all" class="proteus-labels" multiple="multiple" >';
     for (type in myUniqTypes) {
 
-        html += '<optgroup label="' + myUniqTypes[type] + '">'
+        var childNode = rootNode.addChildren({
+            title: myUniqTypes[type], key: myUniqTypes[type], folder: true
+        });
+
         // get the values just for this type
         var myValues = [];
         var tags = GLOBAL.allTags[userID].toString().split(',');
         for (tag in tags) {
             var kv = tags[tag].split(":");
+            // remove any rating info
             if ((kv[0] === myUniqTypes[type]) && (!_.isUndefined(kv[1]))) {
-                myValues.push(kv[1]);
+                // remove the rating, an add only if not already there 
+                var val = kv[1].split("@")[0];
+                if (myValues.indexOf(val) == -1)
+                    myValues.push(val);
             }
         }
 
         // var tags = valueList.split(',');
         for (tag in myValues) {
-            // note we inlclude the "type" part so we can get the values easily later
-            html += '<option value="' + myUniqTypes[type] + ":" + myValues[tag] + '">' + myValues[tag] + '</option>';
+            childNode.addChildren({
+                title: myValues[tag], key: myUniqTypes[type] + ":" + myValues[tag]
+            });
         }
-        html += '</optgroup>';
     }
-    html += ' </select>';
-    $("#all-my-tags").append(html);
-    $('#multiselect-all').multiselect(
-            {
-                includeSelectAllOption: true,
-                buttonWidth: '200px'
-            }
-    );
-}
-;
+    $("#tree").fancytree("getRootNode").visit(function(node) {
+        node.setExpanded(true);
+    });
+
+};
 
 
 UI.clearSelectedLabels = function() {

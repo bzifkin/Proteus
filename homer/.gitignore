@@ -2,5 +2,8 @@
 *.iml
 *.jar
 *.class
+*.xml
+*.txt
+*.swp
 examples/
 /build_example/

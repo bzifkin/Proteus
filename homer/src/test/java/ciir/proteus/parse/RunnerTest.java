@@ -238,32 +238,254 @@ public class RunnerTest {
      }
      */
      @Test
-     public void testMinDistance() throws Exception {
+     public void testMinEditDistance() throws Exception {
 Runner instance  = new Runner();
-String st1 = "Bitch";
-String st2 = "Stitches";
 
-String st3 = "meager meat";
-String st4 = "meagermeat";
+Word st1 = new Word("Bitch");
 
-String st5 = "BEN";
-String st6 = "ben";
+Word st2 = new Word("Stitches");
 
-String st7 = "c@$h!";
-String st8 ="cash!";
-String st9 = "f@$h!";
+Word st3 = new Word("meager meat");
 
-int res1 = instance.minDistance(st1,st2);
-int res2 = instance.minDistance(st3,st4);        
-int res3 = instance.minDistance(st5,st6);       
-int res4 = instance.minDistance(st7,st8);
-int res5 = instance.minDistance(st7,st9);
+Word st4 = new Word("meagermeat");
+
+Word st5 = new Word("BEN");
+
+Word st6 = new Word("ben");
+
+Word st7 = new Word("c@$h!");
+Word st8 = new Word("cash!");
+Word st9 = new Word("f@$h!");
+
+int res1 = instance.minEditDistance(st1,st2);
+int res2 = instance.minEditDistance(st3,st4);        
+int res3 = instance.minEditDistance(st5,st6);       
+int res4 = instance.minEditDistance(st7,st8);
+int res5 = instance.minEditDistance(st7,st9);
 
 assertEquals(4, res1);
 assertEquals(1, res2);
 assertEquals(0, res3);
 assertEquals(2, res4);
 assertEquals(1, res5);
+}
+     @Test
+     public void testBuildHeaderOnPage() throws Exception {
+Runner instance  = new Runner();
+
+Pages p1 = new Pages(1);
+p1.qInch= 600;
+
+
+Word w1 = new Word("heya",1); //low b/c distanc
+w1.xOne = 100;
+w1.yOne =0;
+w1.xTwo = 0;
+w1.yTwo = 0;
+Word w2 = new Word("heya",2); //low b/c strength 
+w2.xOne = 200;
+w2.yOne =0;
+w2.xTwo = 0;
+w2.yTwo = 0;
+Word w3 = new Word("heya",3); // should be middle 
+w3.xOne = 300;
+w3.yOne =0;
+w3.xTwo = 0;
+w3.yTwo = 0;
+Word w4 = new Word("heya",4); //should be high
+w4.xOne = 400;
+w4.yOne =0;
+w4.xTwo = 0;
+w4.yTwo = 0;
+Word w5 = new Word("hay",5); //we'll see
+w5.xOne = 350;
+w5.yOne =0;
+w5.xTwo = 0;
+w5.yTwo = 0;
+p1.wordsOnPage.add(w1);
+p1.wordsOnPage.add(w2);
+p1.wordsOnPage.add(w3);
+p1.wordsOnPage.add(w4);
+p1.wordsOnPage.add(w5);
+
+
+//-----------------------------------------------
+Pages p2 = new Pages(2);
+p2.qInch= 150;
+
+
+Word w6 = new Word("heya",6);
+w6.xOne = 161;
+w6.yOne =61;
+w6.xTwo = 61;
+w6.yTwo = 61;
+Word w7 = new Word("hey",7);
+w7.xOne = 200;
+w7.yOne =61;
+w7.xTwo = 61;
+w7.yTwo = 61;
+Word w8 = new Word("huya",8);
+w8.xOne = 300;
+w8.yOne =61;
+w8.xTwo = 61;
+w8.yTwo = 61;
+Word w9 = new Word("heya",9);
+w9.xOne = 400;
+w9.yOne =61;
+w9.xTwo = 61;
+w9.yTwo = 61;
+Word w10 = new Word("heya",10);
+w10.xOne = 408;
+w10.yOne =61;
+w10.xTwo = 61;
+w10.yTwo = 61;
+p2.wordsOnPage.add(w6);
+p2.wordsOnPage.add(w7);
+p2.wordsOnPage.add(w8);
+p2.wordsOnPage.add(w9);
+p2.wordsOnPage.add(w10);
+//-------------------------------------------------------
+Pages p3 = new Pages(3);
+p3.qInch= 150;
+
+
+Word w11 = new Word("heya",11); //low b/c both
+w11.xOne = 39;
+w11.yOne = 122;
+w11.xTwo = 122;
+w11.yTwo = 122;
+Word w12 = new Word("benjamin",12); //middle
+w12.xOne =200;
+w12.yOne = 122;
+w12.xTwo = 122;
+w12.yTwo = 122;
+Word w13 = new Word("meya",13);//midle
+w13.xOne = 300;
+w13.yOne = 122;
+w13.xTwo = 122;
+w13.yTwo = 122;
+Word w14 = new Word("hey",14);
+w14.xOne =400;
+w14.yOne = 122;
+w14.xTwo = 122;
+w14.yTwo = 122;
+Word w15 = new Word("raging",15);
+w15.xOne= 310;
+w15.yOne = 122;
+w15.xTwo = 122;
+w15.yTwo = 122;
+p3.wordsOnPage.add(w11);
+p3.wordsOnPage.add(w12);
+p3.wordsOnPage.add(w13);
+p3.wordsOnPage.add(w14);
+p3.wordsOnPage.add(w15);
+//----------------------------------------------
+Pages p4 = new Pages(4);
+p4.qInch= 150;
+
+
+Word w16 = new Word("heya",16);
+w16.xOne = 100;
+w16.yOne = 183;
+w16.xTwo = 183;
+w16.yTwo = 183;
+Word w17 = new Word("benmjain",17);
+w17.xOne = 200;
+w17.yOne = 183;
+w17.xTwo = 183;
+w17.yTwo = 183;
+Word w18 = new Word("meta",18);
+w18.xOne = 300;
+w18.yOne = 183;
+w18.xTwo = 183;
+w18.yTwo = 183;
+Word w19 = new Word("ham",19);
+w19.xOne = 440;
+w19.yOne = 183;
+w19.xTwo = 183;
+w19.yTwo = 183;
+Word w20 = new Word("gauging",20);
+w20.xOne = 320;
+w20.yOne = 183;
+w20.xTwo = 183;
+w20.yTwo = 183;
+
+p4.wordsOnPage.add(w16);
+p4.wordsOnPage.add(w17);
+p4.wordsOnPage.add(w18);
+p4.wordsOnPage.add(w19);
+p4.wordsOnPage.add(w20);
+//-----------------------------------------------------
+Pages p5 = new Pages(5);
+p5.qInch= 150;
+
+
+
+Word w21 = new Word("dick",21);
+w21.xOne = 99;
+w21.yOne = 244;
+w21.xTwo = 244;
+w21.yTwo = 244;
+Word w22 = new Word("benjami",22);
+w22.xOne = 200;
+w22.yOne = 244;
+w22.xTwo = 244;
+w22.yTwo = 244;
+Word w23 = new Word("mesa",23);
+w23.xOne = 300;
+w23.yOne = 244;
+w23.xTwo = 244;
+w23.yTwo = 244;
+Word w24 = new Word("gey",24);
+w24.xOne = 424;
+w24.yOne = 244;
+w24.xTwo = 244;
+w24.yTwo = 244;
+Word w25 = new Word("paging",25);
+w25.xOne = 330;
+w25.yOne = 244;
+w25.xTwo = 244;
+w25.yTwo = 244;
+p5.wordsOnPage.add(w21);
+p5.wordsOnPage.add(w22);
+p5.wordsOnPage.add(w23);
+p5.wordsOnPage.add(w24);
+p5.wordsOnPage.add(w25);
+
+ArrayList<Pages> plist = new ArrayList<Pages>();
+plist.add(p1);
+plist.add(p2);
+plist.add(p3);
+plist.add(p4);
+plist.add(p5);
+
+instance.buildHeaderOnPage(p1, plist);
+instance.buildHeaderOnPage(p2, plist);
+instance.buildHeaderOnPage(p3, plist);
+instance.buildHeaderOnPage(p4, plist);
+instance.buildHeaderOnPage(p5, plist);
+
+
+   for(Pages p : plist){
+       System.out.println("for page " + p.indexNum + "\n");
+       for(Word w: p.wordsOnPage){
+           System.out.println(w.toString() + " STRENGTH " + w.strength);
+       
+       }
+       System.out.println("------------------------------");
+   }
+/*
+System.out.println("for page p1 LIKELY has " + p1.likely.toString() + "\n MEDIUM has " + p1.maybe.toString() + "\n and UNLIKELY has " + p1.unlikely.toString() + "\n");
+    System.out.println("-------------------------------\n");
+    System.out.println("for page p2 LIKELY has " + p2.likely.toString() + "\n MEDIUM has " + p2.maybe.toString() + "\n and UNLIKELY has " + p2.unlikely.toString() + "\n");
+    System.out.println("-------------------------------\n");
+    System.out.println("for page p3 LIKELY has " + p3.likely.toString() + "\n MEDIUM has " + p3.maybe.toString() + "\n and UNLIKELY has " + p3.unlikely.toString() + "\n");
+    System.out.println("-------------------------------\n");
+    System.out.println("for page p4 LIKELY has " + p4.likely.toString() + "\n MEDIUM has " + p4.maybe.toString() + "\n and UNLIKELY has " + p4.unlikely.toString() + "\n");
+    System.out.println("-------------------------------\n");
+    System.out.println("for page p5 LIKELY has " + p5.likely.toString() + "\n MEDIUM has " + p5.maybe.toString() + "\n and UNLIKELY has " + p5.unlikely.toString() + "\n");
+    System.out.println("-------------------------------\n");
+*/
 }
      
     /*

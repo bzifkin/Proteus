@@ -15,16 +15,16 @@ var bookThumbnail = function(archiveId) {
 }
 
 var pageImage = function(archiveId, pageNum) {
-    return "http://www.archive.org/download/" + archiveId + "/page/n" + pageNum + ".jpg";
+    return "http://www.archive.org/download/" + encodeURIComponent(archiveId) + "/page/n" + pageNum + ".jpg";
 };
 
 var pageThumbnail = function(archiveId, pageNum) {
-    return "http://www.archive.org/download/" + archiveId + "/page/n" + pageNum + "_thumb.jpg";
+    return "http://www.archive.org/download/" + encodeURIComponent(archiveId) + "/page/n" + pageNum + "_thumb.jpg";
 };
 
 
 
-console.log("Defining table, renderResult=" + renderResult);
+//console.log("Defining table, renderResult=" + renderResult);
 var renderResult = function(queryTerms, result, resDiv) {
 
     var name = result.meta.title || result.name;
@@ -34,19 +34,21 @@ var renderResult = function(queryTerms, result, resDiv) {
     var iaURL = result.meta["identifier-access"];
 
     if (iaURL) {
-        name = '<a href="' + iaURL + '">' + name + '</a>';
+        name = Render.getDocumentURL(iaURL, name, queryTerms, result.rank);
     }
     var pgImage = iaURL;
     if (!_.isUndefined(pageNum)) {
+        // if page result - make the link go to the page
+        name = Render.getDocumentURL('https://archive.org/stream/' + identifier + '#page/n' + pageNum + '/mode/2up', result.meta.title || result.name, queryTerms, result.rank);
+
         // MCZ : removing page number for now as it does not match up with 
         // the physical page number shown on the page
         //name += ' pp. ' + pageNum;
         pgImage = pageImage(identifier, pageNum);
     }
+    var thumbnail = '<img class="thumbnail" src="' + pageThumbnail(identifier, pageNum) + '"/>';
+    var previewImage = Render.getDocumentURL(pgImage, thumbnail, queryTerms, result.rank);
 
-    var previewImage = '<a href="' + pgImage + '">' +
-            '<img class="thumbnail" src="' + pageThumbnail(identifier, pageNum) + '"/>' +
-            '</a>';
     var html =
             '<div class="result">' +
             '<table>' +

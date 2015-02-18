@@ -1,10 +1,27 @@
-body {
-    margin: 0;
-    padding: 0;
+#results-left{
+    background-color: white;
+    border-right: 1px solid #888;
+    height: 100%;
+    top:  0;
+    bottom: 0;
+    left: 0;
+    overflow-y: scroll;	
+
 }
 
+#results-right{
+
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    overflow-y: scroll;	
+
+}
+
+
 .snippet {
-    padding-left: 20pt;
+    padding: 10pt;
     color: #666;
 }
 
@@ -44,6 +61,10 @@ body {
     margin-top: 40pt;
     padding: 10pt;
     background-color: #009;
+    text-align: left;
+}
+#more{
+    text-align: left;
 }
 
 #ui {
@@ -78,6 +99,9 @@ body {
 
 #login-form-text{
     color: #fff;
+    text-align: right;
+}
+#ui-go-logout{
     text-align: right;
 }
 /*
@@ -141,14 +165,15 @@ img.thumbnail {
 .multiselect-item {
     text-align: left;
 }
-#all-my-tags > div > ul > li  > a > label  
-{
-    text-align: left;
-
-}
-.right-align{
+.right-align {
     text-align: right;
 }
+
+ #view-resource{
+     /* render any HTML with newlines */
+     white-space: pre;
+     text-align: left;
+ }
 
 /* make navbar smaller (http://stackoverflow.com/questions/19576175/how-do-you-decrease-navbar-height-in-bootstrap-3) */
 .navbar-nav > li > a {padding-top:5px !important; padding-bottom:5px !important; color: white;}
@@ -159,3 +184,22 @@ img.thumbnail {
     color: blue;
     cursor: pointer;}
 .navbar {min-height:32px !important}
+
+
+#sidebar-button{ float:left; color: white;   cursor: hand;   font-weight: bold;}
+
+/* override FancyTree CSS */
+ul.fancytree-container {
+    border: none;
+}
+
+td.metakey {
+    padding: 8px;
+    margin-left: 2cm;
+}
+
+body {
+    margin: 0;
+    padding-top: 100px; 
+    overflow-y: hidden;
+}

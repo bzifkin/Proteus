@@ -79,6 +79,7 @@ public class H2Database implements UserDatabase {
                     + "USER_ID BIGINT NOT NULL,  "
                     + "resource varchar(256) NOT NULL, "
                     + "LABEL_TYPE VARCHAR_IGNORECASE(256) NOT NULL, LABEL_VALUE VARCHAR_IGNORECASE(256) NOT NULL, "
+                    + "rating int NOT NULL default 0, "
                     + "foreign key (user_id) references users(id)"
                     + ")");
             conn.createStatement().executeUpdate("create index IF NOT EXISTS label_resource_idx on tags(resource)");
@@ -126,7 +127,7 @@ public class H2Database implements UserDatabase {
         }
 
         System.out.println("Logging in user " + username);
-        Parameters ret = Parameters.instance();
+        Parameters ret = Parameters.create();
         ret.put("user", username);
         Integer userid = -1;
         Connection conn = null;
@@ -249,7 +250,7 @@ public class H2Database implements UserDatabase {
     public Map<String, List<String>> getTags(Credentials creds, List<String> resources) throws DBError {
         checkSession(creds);
 
-        Map<String, List<String>> results = new HashMap<String, List<String>>();
+        Map<String, List<String>> results = new HashMap<>();
 
         Connection conn = null;
         try {
@@ -260,7 +261,7 @@ public class H2Database implements UserDatabase {
             sql.setInt(1, creds.userid);
 
             for (String resource : resources) {
-                List<String> tags = new ArrayList<String>();
+                List<String> tags = new ArrayList<>();
                 sql.setString(2, resource);
 
                 ResultSet tuples = sql.executeQuery();
@@ -291,21 +292,21 @@ public class H2Database implements UserDatabase {
     @Override
     public Map<String, Map<Integer, List<String>>> getAllTags(List<String> resources) throws DBError {
 
-        Map<String, Map<Integer, List<String>>> results = new HashMap<String, Map<Integer, List<String>>>();
+        Map<String, Map<Integer, List<String>>> results = new HashMap<>();
 
         Connection conn = null;
         try {
             conn = cpds.getConnection();
 
-            PreparedStatement sql = conn.prepareStatement("SELECT user_id, label_type || ':' || label_value AS tag FROM tags WHERE resource LIKE ? GROUP BY user_id, tag ORDER BY user_id, tag");
+            PreparedStatement sql = conn.prepareStatement("SELECT user_id, label_type || ':' || label_value || '@' || tags.rating AS tag FROM tags WHERE resource LIKE ? GROUP BY user_id, tag ORDER BY user_id, tag");
             for (String resource : resources) {
-                Map<Integer, List<String>> userTags = new HashMap<Integer, List<String>>();
+                Map<Integer, List<String>> userTags = new HashMap<>();
                 sql.setString(1, resource);
 
                 ResultSet tuples = sql.executeQuery();
 
                 Integer currentUser = -1;
-                List<String> tags = new ArrayList<String>();
+                List<String> tags = new ArrayList<>();
 
                 while (tuples.next()) {
 
@@ -317,12 +318,12 @@ public class H2Database implements UserDatabase {
 
                     String tag = tuples.getString(2);
 
-                    if (currentUser != user) {
+                    if (!Objects.equals(currentUser, user)) {
                         userTags.put(currentUser, tags);
                         results.put(resource, userTags); // put user/tags in results for the resource
 
                         currentUser = user;
-                        tags = new ArrayList<String>();
+                        tags = new ArrayList<>();
                     }
 
                     tags.add(tag);
@@ -382,17 +383,18 @@ public class H2Database implements UserDatabase {
     }
 
     @Override
-    public void addTag(Credentials creds, String resource, String tag) throws DBError {
+    public void addTag(Credentials creds, String resource, String tag, Integer rating) throws DBError {
         checkSession(creds);
 
         String labelParts[] = tag.split(":");
         Connection conn = null;
         try {
             conn = cpds.getConnection();
-            PreparedStatement sql = conn.prepareStatement("insert into tags (user_id,resource,label_type, label_value) values (?,?,?,?)");
+            PreparedStatement sql = conn.prepareStatement("insert into tags (user_id,resource,label_type, label_value, rating) values (?,?,?,?,?)");
 
             sql.setInt(1, creds.userid);
             sql.setString(2, resource);
+            sql.setInt(5, rating);
 
             // if there is only 1 part to the tag, use the "wildcard" for the label type
             if (labelParts.length == 1) {
@@ -425,7 +427,7 @@ public class H2Database implements UserDatabase {
         try {
             conn = cpds.getConnection();
 
-            List<String> resources = new ArrayList<String>();
+            List<String> resources = new ArrayList<>();
             Object[] objLabels = new Object[labels.size()];
             int i = 0;
             for (String label : labels) {

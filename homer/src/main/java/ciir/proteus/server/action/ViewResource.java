@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author jfoley
@@ -23,7 +24,7 @@ public class ViewResource implements JSONHandler {
   }
 
   @Override
-  public Parameters handle(String method, String path, Parameters reqp) throws HTTPError, DBError {
+  public Parameters handle(String method, String path, Parameters reqp, HttpServletRequest req) throws HTTPError, DBError {
     assert(reqp.getString("action").equals("view"));
     String docId = reqp.getString("id");
     if(!reqp.isString("kind")) {
@@ -38,14 +39,14 @@ public class ViewResource implements JSONHandler {
       log.log(Level.WARNING, "IOException while trying to get document=" + docId + " for kind=" + kind, e);
     }
 
-    Parameters response = Parameters.instance();
+    Parameters response = Parameters.create();
     if(doc == null) {
       response.put("found", false);
       return response;
     }
     response.put("found", true);
 
-    Parameters metadata = Parameters.instance();
+    Parameters metadata = Parameters.create();
     for(Map.Entry<String,String> kv : doc.metadata.entrySet()) {
       metadata.put(kv.getKey(), kv.getValue());
     }

@@ -1,10 +1,10 @@
 package ciir.proteus.server;
 
-import ciir.proteus.users.http.GetResourcesForLabels;
 import ciir.proteus.server.action.*;
 import ciir.proteus.system.ProteusSystem;
 import ciir.proteus.users.error.DBError;
 import ciir.proteus.users.http.*;
+import ciir.proteus.util.ClickLogHelper;
 import ciir.proteus.util.HTTPUtil;
 import org.lemurproject.galago.utility.Parameters;
 import org.lemurproject.galago.tupleflow.web.WebHandler;
@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class HTTPRouter implements WebHandler {
 
     private static final Logger log = Logger.getLogger(HTTPRouter.class.getName());
+    private static final org.apache.logging.log4j.Logger proteusLog = LogManager.getLogger("Proteus");
     private final JSONHandler debug;
     private final JSONHandler search;
     private final JSONHandler viewResource;
@@ -53,8 +55,10 @@ public class HTTPRouter implements WebHandler {
     @Override
     public void handle(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
+
             String method = req.getMethod();
             String path = req.getPathInfo();
+
             Parameters reqp = HTTPUtil.fromHTTPRequest(req);
 
             final boolean GET = method.equals("GET");
@@ -67,12 +71,15 @@ public class HTTPRouter implements WebHandler {
                 }
 
                 String action = reqp.getString("action");
-                if (action.equals("search")) {
-                    handler = search;
-                } else if (action.equals("view")) {
-                    handler = viewResource;
-                } else {
-                    throw new IllegalArgumentException("/api/action doesn't know how to handle action=" + action);
+                switch (action) {
+                    case "search":
+                        handler = search;
+                        break;
+                    case "view":
+                        handler = viewResource;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("/api/action doesn't know how to handle action=" + action);
                 }
             } else if (GET && path.equals("/api/kinds")) {
                 handler = getKinds;
@@ -92,6 +99,9 @@ public class HTTPRouter implements WebHandler {
                 handler = register;
             } else if (POST && path.equals("/api/resourcesforlabels")) {
                 handler = resourcesforlabels;
+            } else if (path.equals("/url")) {
+                handleRedirect(reqp, req, resp);
+                return;
             } else if (path.equals("/api/debug")) {
                 handler = debug;
             } else if (GET && !path.startsWith("/api/")) {
@@ -101,7 +111,7 @@ public class HTTPRouter implements WebHandler {
                 resp.sendError(HTTPError.NotFound, "Not found");
                 return;
             }
-            handleJSON(handler, method, path, reqp, resp);
+            handleJSON(handler, method, path, reqp, resp, req);
         } catch (IllegalArgumentException iae) {
             log.log(Level.INFO, "illegal argument received", iae);
             resp.sendError(HTTPError.BadRequest, iae.getMessage());
@@ -112,12 +122,12 @@ public class HTTPRouter implements WebHandler {
     }
 
 // forward to JSON handler interface
-    private void handleJSON(JSONHandler which, String method, String path, Parameters reqp, HttpServletResponse resp) throws IOException {
+    private void handleJSON(JSONHandler which, String method, String path, Parameters reqp, HttpServletResponse resp, HttpServletRequest req) throws IOException {
         resp.addHeader("Access-Control-Allow-Origin", "*");
         resp.addHeader("Content-Type", "application/json");
 
         try {
-            Parameters response = which.handle(method, path, reqp);
+            Parameters response = which.handle(method, path, reqp, req);
             PrintWriter pw = resp.getWriter();
             pw.write(response.toString());
             pw.flush();
@@ -137,4 +147,12 @@ public class HTTPRouter implements WebHandler {
         }
 
     }
+
+    private void handleRedirect(Parameters reqp, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.sendRedirect(reqp.getString("url"));
+
+        proteusLog.info("CLICK\t{}\t{}\t{}", ClickLogHelper.getID(reqp, req), reqp.get("rank").toString(), reqp.getString("url"));
+
+    }
+
 }

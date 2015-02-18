@@ -18,6 +18,7 @@ var Model = {
     request: {},
     query: "",
     results: [],
+    queryType: null,
     // user login data
     user: null,
     userid: null,
@@ -107,6 +108,7 @@ var logIn = function(userName) {
             Model.user = userName;
             Model.userid = data.userid;
             Model.token = data.token;
+            location.reload(true);
         }, function(req, status, err) {
             UI.showError("ERROR: ``" + err + "``");
             throw err;
@@ -133,6 +135,9 @@ var logOut = function() {
         Model.user = null;
         Model.token = null;
         Model.userid = null;
+        // quick and dirty, trigger refresh to get rid of
+        // all the label stuff.
+        location.reload(true);
     }, function(req, status, err) {
         UI.showError("ERROR: ``" + err + "``");
         throw err;
@@ -142,12 +147,13 @@ var logOut = function() {
 
 };
 
-var addTag = function(tagText, resourceID) {
+var addTag = function(tagText, resourceID, rating) {
     var userName = getCookie("username");
     var userToken = getCookie("token");
     var userID = getCookie("userid");
 
-    var tmp = '{  "userid": ' + userID + ', "user": "' + userName + '", "token" :"' + userToken + '", "tags": {"' + formatLabelForDatabase(tagText) + '": ["' + resourceID + '"]}}';
+    var tmp = '{  "userid": ' + userID + ', "user": "' + userName + '", "token" :"' + userToken + '", "rating" : ' + rating + ',"tags": {"' + formatLabelForDatabase(tagText) + '": ["' + resourceID + '"]}}';
+    console.log(tmp);
     var args = JSON.parse(tmp);
     API.createTags(args, null, function(req, status, err) {
         UI.showError("ERROR: ``" + err + "``");
@@ -162,7 +168,7 @@ var deleteTag = function(tagText, resourceID) {
     var userToken = getCookie("token");
 
     var tmp = '{ "userid": ' + userID + ', "user": "' + userName + '", "token" :"' + userToken + '", "tags": {"' + formatLabelForDatabase(tagText) + '": ["' + resourceID + '"]}}';
-
+    console.log(tmp);
     var args = JSON.parse(tmp);
     API.deleteTags(args, null, function(req, status, err) {
         UI.showError("ERROR: ``" + err + "``");
@@ -178,8 +184,6 @@ var getAllTagsByUser = function() {
     var userToken = getCookie("token");
     var uniqType = [];
 
-    UI.hideMyTagsFunctionality();
-
     var args = {resource: ["%"], user: userName, userid: userID, token: userToken};
     API.getAllTagsByUser(args, function(origresult) {
 
@@ -187,7 +191,7 @@ var getAllTagsByUser = function() {
 
         GLOBAL.allTags = origresult[keys[0]];
         for (user in GLOBAL.allTags) {
-            // not the most effiecent code in the world
+            // not the most efficient code in the world
             tags = GLOBAL.allTags[user].toString().split(',');
             for (tag in tags) {
                 uniqType.push(tags[tag].split(":")[0]);
@@ -217,11 +221,12 @@ var getAllTagsByUser = function() {
                     var kv = tags[tag].split(":");
 
                     if ((kv[0] === myUniq[type]) && (!_.isUndefined(kv[1]))) {
-                        myValues.push(kv[1]);
+                        myValues.push(kv[1].split("@")[0]); // remove the rating
                     }
                 }
             }
         }
+
 
     }, function(req, status, err) {
         UI.showError("ERROR: ``" + err + "``");
@@ -232,3 +237,25 @@ var getAllTagsByUser = function() {
 
 // get all tags grouped by user on start up
 getAllTagsByUser();
+
+var showSideBar = true;
+
+$('#sidebar-button').click(function() {
+    if (showSideBar == true) {
+        $('#sidebar-button').html(">>");
+        $("#results-left").hide();
+        $("#results-right").removeClass("col-md-10");
+        $("#results-right").addClass("col-md-12");
+        showSideBar = false;
+    } else {
+        $('#sidebar-button').html("<<");
+        $("#results-left").show();
+        showSideBar = true;
+        $("#results-right").removeClass("col-md-12");
+        $("#results-right").addClass("col-md-10");
+    }
+}
+);
+
+
+						

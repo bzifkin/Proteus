@@ -19,9 +19,9 @@ public class QueryUtil {
    * @return a set of terms as a list
    */
   public static List<String> queryTerms(Node query) {
-    final HashSet<String> terms = new HashSet<String>();
+    final HashSet<String> terms = new HashSet<>();
 
-    walk(query, Parameters.instance(), new BeforeTraversal() {
+    walk(query, Parameters.create(), new BeforeTraversal() {
       @Override
       public void beforeNode(Node original, Parameters queryParameters) throws Exception {
         if(isTextNode(original)) {
@@ -30,7 +30,7 @@ public class QueryUtil {
       }
     });
 
-    return new ArrayList<String>(terms);
+    return new ArrayList<>(terms);
   }
 
   /**

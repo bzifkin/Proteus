@@ -2,16 +2,14 @@ package ciir.proteus.users.http;
 
 import ciir.proteus.server.HTTPError;
 import ciir.proteus.system.DocumentAnnotator;
-import static ciir.proteus.system.DocumentAnnotator.annotate;
 import ciir.proteus.system.ProteusSystem;
 import ciir.proteus.users.Credentials;
 import ciir.proteus.users.error.DBError;
 import static ciir.proteus.users.http.DBAction.log;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.lemurproject.galago.core.parse.Document;
+import javax.servlet.http.HttpServletRequest;
+
 import org.lemurproject.galago.core.retrieval.ScoredDocument;
 import org.lemurproject.galago.utility.Parameters;
 
@@ -29,7 +27,7 @@ public class GetResourcesForLabels extends DBAction {
     }
 
     @Override
-    public Parameters handle(String method, String path, Parameters reqp) throws HTTPError {
+    public Parameters handle(String method, String path, Parameters reqp, HttpServletRequest req) throws HTTPError {
 
         Credentials creds = Credentials.fromJSON(reqp);
         List<String> labels = reqp.getAsList("labels", String.class);
@@ -38,25 +36,24 @@ public class GetResourcesForLabels extends DBAction {
         int skipResults = (int) reqp.get("skip", 0);
 
         log.info("GetResourcesForLabels creds=" + creds + " labels=" + labels + " kind=" + kind);
-        List<String> resList = null;
-        Parameters resources = Parameters.instance();
+        List<String> resList;
         try {
 
             resList = userdb.getResourcesForLabels(creds.userid, labels, numResults, skipResults);
 
             // now get results
-            Parameters param = Parameters.instance();
+            Parameters param = Parameters.create();
             param.set("snippets", false);
             param.set("tags", true);
 
-            List<ScoredDocument> fakeDocs = new ArrayList<ScoredDocument>();
+            List<ScoredDocument> fakeDocs = new ArrayList<>();
             for (String id : resList) {
                 fakeDocs.add(new ScoredDocument(id, 0, 0.0));
             }
 
             List<Parameters> results = DocumentAnnotator.annotate(system, kind, fakeDocs, null, param);
 
-            Parameters response = Parameters.instance();
+            Parameters response = Parameters.create();
             response.set("results", results);
             return response;
 

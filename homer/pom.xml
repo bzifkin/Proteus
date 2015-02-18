@@ -13,8 +13,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javaVersion>1.6</javaVersion>
-        <galagoVersion>3.7-SNAPSHOT</galagoVersion>
+        <javaVersion>1.7</javaVersion>
+        <galagoVersion>3.8-SNAPSHOT</galagoVersion>
         <mainClass>ciir.proteus.build.Main</mainClass>
     </properties>
 
@@ -49,11 +49,10 @@
             <artifactId>h2</artifactId>
             <version>1.3.175</version>
         </dependency>
-        
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.3.2</version>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.2.1</version>
         </dependency>
 
         <dependency>
@@ -66,9 +65,25 @@
         <dependency>
             <groupId>org.lemurproject.galago</groupId>
             <artifactId>core</artifactId>
-            <version>3.7-SNAPSHOT</version>
+            <version>${galagoVersion}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.lemurproject.galago</groupId>
+            <artifactId>utility</artifactId>
+            <version>${galagoVersion}</version>
+        </dependency>
+ 
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.1</version>
+        </dependency>
+ 
     </dependencies>
 
     <build>
@@ -118,3 +133,4 @@
         </plugins>
     </build>
 </project>
+>>>>>>> 79e267c3a5a8ab7eab8862de54a909aad67ac4ad

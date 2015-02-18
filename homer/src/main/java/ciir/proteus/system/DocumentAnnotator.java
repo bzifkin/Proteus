@@ -22,7 +22,7 @@ public class DocumentAnnotator {
 
     public static List<Parameters> annotate(ProteusSystem system, String kind, List<String> names, Parameters reqp) throws DBError {
         reqp.put("metadata", false);
-        List<ScoredDocument> fakeDocs = new ArrayList<ScoredDocument>();
+        List<ScoredDocument> fakeDocs = new ArrayList<>();
         for (String id : names) {
             fakeDocs.add(new ScoredDocument(id, 0, 0.0));
         }
@@ -54,7 +54,7 @@ public class DocumentAnnotator {
         }
 
         // result data
-        ArrayList<Parameters> resultData = new ArrayList<Parameters>(results.size());
+        ArrayList<Parameters> resultData = new ArrayList<>(results.size());
         for (ScoredDocument sdoc : results) {
             Document doc = pulled.get(sdoc.documentName);
 
@@ -62,7 +62,7 @@ public class DocumentAnnotator {
                 continue;
             }
 
-            Parameters docp = Parameters.instance();
+            Parameters docp = Parameters.create();
 
             // default annotations
             docp.put("name", sdoc.documentName);
@@ -87,7 +87,7 @@ public class DocumentAnnotator {
 
                 // get the tags for this resource
                 if (docTags.containsKey(sdoc.documentName)) {
-                    Parameters tmp = Parameters.instance();
+                    Parameters tmp = Parameters.create();
                     for (Map.Entry<Integer, List<String>> entry : docTags.get(sdoc.documentName).entrySet()) {
                         tmp.put(entry.getKey().toString(), entry.getValue());
                     }

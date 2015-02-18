@@ -6,7 +6,9 @@
 
 package ciir.proteus.parse;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,32 +52,67 @@ public class WordTest {
     */
     @Test
     public void testComparator() {
-        
-        Word instance = new Word("1", 1);
-        Word instance2 = new Word("2", 6);
-        Word instance3 = new Word("3", 8);
-        Word instance4 = new Word("4", 20);
-         Word instance5 = new Word("5", 2);
+        List<Word> blah = new ArrayList<Word>();
+        Word instance = new Word("hey", 1);
+        Word instance2 = new Word("you", 2);
+        Word instance3 = new Word("whats", 3);
+        Word instance4 = new Word("going", 4);
+         Word instance5 = new Word("on", 5);
      
          instance.count =1;
+         instance.strength = 20.0;
+         instance.xOne = 100;
+        
         instance2.count =6;
+        instance2.strength = 16.4;
+        instance2.xOne = 200;
+        
         instance3.count =8;
-        instance4.count =20;
-        instance5.count =2;
+        instance3.strength = 16.2;
+        instance3.xOne = 300;
         
-        instance.potentialMatches.add(instance2);
-        instance.potentialMatches.add(instance3);
-        instance.potentialMatches.add(instance4);
-        instance.potentialMatches.add(instance5);
+        instance4.count =10;
+        instance4.strength = 10.0;
+        instance4.xOne = 400;
         
+        instance5.count =20;
+        instance5.strength =8.0;
+        instance5.xOne = 500;
         
-        Collections.sort(instance.potentialMatches, Word.countComparator);
+        blah.add(instance2);
+       blah.add(instance);
+       blah.add(instance4);
+       blah.add(instance3);
+       blah.add(instance5);
+         
+       String a ="unsorted";
+       
         
-        String o ="";
-        for(Word w : instance.potentialMatches){
-        o = o+ w.toString();
+         for(Word w : blah){
+        a = a+ w.toStringSC();
+        }
+        System.out.println(a);
+        
+        String o ="sorted by strength";
+        Collections.sort(blah, new Word.WordStrengthComparator());
+         for(Word w : blah){
+        o = o+ w.toStringSC();
         }
         System.out.println(o);
+        
+        Collections.sort(blah, new Word.WordCountComparator());
+        String s ="sorted by count";
+         for(Word w : blah){
+        s = s+ w.toStringSC();
+        }
+        System.out.println(s);
+        
+        Collections.sort(blah, new Word.WordXOneComparator());
+        String x ="Sorted by xOne";
+         for(Word w : blah){
+        x = x+ w.toStringSC();
+        }
+        System.out.println(x);
         
        
     }
