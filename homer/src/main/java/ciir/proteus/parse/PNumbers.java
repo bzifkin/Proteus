@@ -35,7 +35,7 @@ public class PNumbers {
         ArrayList<NumScheme> possPageSeqs = new ArrayList<NumScheme>(); // create a list of all the possible sequences
 //iterate through pages to find schemes
         for (Pages p : pagelist) {
-            //System.out.println("searching pages, poss # of seqs: " + possPageSeqs.size());
+           
 //setting the parking lot
 
             for (NumScheme ns : possPageSeqs) {
@@ -64,7 +64,7 @@ public class PNumbers {
                 }
             }
             for (NumScheme num : possPageSeqs) {
-//System.out.println("setting to false");
+
                 num.foundElementOnCurrPage = false;
             }
 
@@ -74,6 +74,8 @@ public class PNumbers {
         return possPageSeqs;
     }
 
+    
+    // we call this method to detect if there is a currently existing sequence that our token fits in, if not a new sequence is generated
     public static ArrayList<NumScheme> handleArabic(ArrayList<NumScheme> pps, Word w) {
 
         NumScheme temp = new NumScheme();
@@ -106,6 +108,8 @@ public class PNumbers {
 
     }
 
+    
+    // we cycle through all numschemes and check to see if a token fits into them using offset as a key metric
     public static NumScheme findArabicSequence(ArrayList<NumScheme> pps, Word w) {
 //System.out.println("looking for an arab seqience");
         if (pps.size() == 0) {
@@ -133,7 +137,7 @@ public class PNumbers {
         //System.out.println("returning null b/c no schemes fit");
         return null;
     }
-
+   // we cycle through all numschemes and check to see if a token fits into them using offset as a key metric
     public static NumScheme findRomanSequence(ArrayList<NumScheme> pps, Word w) {
 //System.out.println("looking for a roman sequence");
         if (pps.size() == 0) {
@@ -196,7 +200,14 @@ public class PNumbers {
 
     }
 
-    public static NumScheme stitchMyBitchUp(List<NumScheme> lons) {
+    /*
+    here we stitch our various schemes together
+    TODO:
+    1 add the functionality going backwards, for the purposes of connecting any schemes that occured before our starting point
+    2 make it so that any larges schemes that are discarded in the trim blank method are added to a list and they are fitted in probably in the same step as above  
+    */
+ 
+    public static NumScheme stitchMeUp(List<NumScheme> lons) {
         //  System.out.println("getting stitched");
 
         NumScheme theScheme = new NumScheme();
@@ -236,33 +247,11 @@ public class PNumbers {
             }
         }
         
-        /*for (NumScheme ns : earlyPages) {
-         Collections.sort(earlyPages, new NumScheme.indexComparator());
-         Collections.reverse(earlyPages);
-         int currOSet = theScheme.sequence.get(0).getOffSet();
-         // System.out.println("offset of last: " + currOSet);
-         int lastPNum = theScheme.sequence.get(0).getPageNum();
-         if (ns.getLastNonBlank().getOffSet() == currOSet && sameType(theScheme, ns) == true && (ns.getLastNonBlank().getPageNum() <= lastPNum + 5 && ns.getLastNonBlank().getPageNum() >= lastPNum - 15)) {
-         //  System.out.println("offset matches ");
-         ns.inScheme = true;
-         trimBlanks(theScheme, ns, lons);
-         theScheme.sequence.addAll(ns.sequence);
-         } else if (ns.getTrueSize() >= 8) {
-         //   System.out.println("true size greater than 8");
-         ns.inScheme = true;
-         trimBlanks(theScheme, ns, lons);
-         theScheme.sequence.addAll(ns.sequence);
-         } else if (inBounds(theScheme, ns) == true && sameType(theScheme, ns) == true) {
-         //    System.out.println("within last few pages and index matches");
-         ns.inScheme = true;
-         trimBlanks(theScheme, ns, lons);
-         theScheme.sequence.addAll(ns.sequence);
-         }
-         }*/
+       
 
         return theScheme;
     }
-
+// we find the begining by finding the first shceme above a true strength of 4
     public static NumScheme findBegining(List<NumScheme> loss) {
         // System.out.println("in startoff");
         NumScheme temp = new NumScheme();
@@ -366,7 +355,7 @@ public class PNumbers {
                 // System.out.println("found blank # " + blankCounter);
                 if (placeHolder == 0) {
                     temp = it.previous();
-                    temp = it.previous(); //because java is fucking stupid i have to call previous twice to actually get the previous element....fucking retarded
+                    temp = it.previous(); //because java is stupid i have to call previous twice to actually get the previous element...
 
                     int prev = temp.getPageNum();
 

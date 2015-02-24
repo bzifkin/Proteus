@@ -26,8 +26,9 @@ public class HeaderFinder {
 
         for (Pages p : pHeaders) {
 
-            findHeaderCandidates(p, pHeaders);
-            sortRegionsAndLines(p);
+            findHeaderCandidates(p, pHeaders); // here we assign the strength of words this is done as such: first a group of words that fall in similar location on neighbor pages are gathered. 
+                                                //Then based on how similar those locations are each word is assigned a strength. This strength is then multiplied depending on the length of the strings and their edit distance
+            sortRegionsAndLines(p); // here we put theme into regions: Top, Bottom, Sides, and then into lines.
         }
         for (Pages p : pHeaders) {
 

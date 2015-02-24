@@ -22,10 +22,15 @@ public class Runner {
     public static List<Pages> possHeaders = new ArrayList<Pages>();
     public static List<Pages> possNums = new ArrayList<Pages>();
     public static NumScheme TRUTH;
-    /*this method is similar to the trim method
-     lots of calls are made to toerh methods and 
-     this one is just bones of the process
-     */
+  
+    
+    
+    /*
+    This is where our word tokens are seperated into numeric and non numeric lists
+    TODO: 
+    *recognize repeating numeric tokens and add them to header list
+    *add fucntionality for different numbering schemes other than roman/arabic
+    */
 
     public static void sortTokens(List<Pages> pagelist) {
 
@@ -94,7 +99,7 @@ public class Runner {
                 PNumbers pn = new PNumbers();
                 List<NumScheme> listSchemes = pn.sortSchemes(possNums);
                 List<NumScheme> cleanSchemes = pn.cleanData(listSchemes);
-                TRUTH = pn.stitchMyBitchUp(cleanSchemes);
+                TRUTH = pn.stitchMeUp(cleanSchemes);
                 for(Word w: TRUTH.sequence){
                 if(w.isBlank == false){
                     totalFound++;
@@ -169,7 +174,7 @@ public class Runner {
             //      }
             //    System.out.println(out);
 
-            //TRUTH = pn.stitchMyBitchUp(cleanSchemes);
+            //TRUTH = pn.stitchMeUp(cleanSchemes);
             // ???? how do i get print writer to print the file to adifferent directory. solution is below but seems hacky
            // if (TRUTH != null) {
             //    TRUTH = pn.fillInBlanks(TRUTH);
