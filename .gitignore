@@ -15,3 +15,5 @@ project/boot*
 project/plugins/project
 ctags
 idea.iml
+galago
+djvu_ex
