@@ -45,17 +45,17 @@ public class PagesTest {
   */  
     
     
-    @Test
-    public void testGetOffSet(){
-    
-    Pages instance = new Pages();
-    Pages.Word fuck = new Pages.Word("5", 8);
-    fuck.isArabic = true;
-    int expResult = 3;
-    assertEquals(expResult,fuck.getOffSet());
-    
-    
-    
-    
-    }
+//    @Test
+//    public void testGetOffSet(){
+//    
+//    Pages instance = new Pages();
+//    Pages.Word fuck = new Pages.Word("5", 8);
+//    fuck.isArabic = true;
+//    int expResult = 3;
+//    assertEquals(expResult,fuck.getOffSet());
+//    
+//    
+//    
+//    
+//    }
 }

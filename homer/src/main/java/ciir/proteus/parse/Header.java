@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-//package ciir.proteus.parse;
+package ciir.proteus.parse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,7 +58,7 @@ public class Header {
 
     public int getAvgYCoord() {
         int avg = 0;
-        if (this.line.get(0).line == 0) {
+        if (0 == this.line.get(0).line) {
             for (int i = 0; i <= line.size() - 1; i++) {
                 avg = avg + line.get(i).yTwo;
             }

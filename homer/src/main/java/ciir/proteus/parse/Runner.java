@@ -1,4 +1,5 @@
-//package ciir.proteus.parse;
+package ciir.proteus.parse;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
